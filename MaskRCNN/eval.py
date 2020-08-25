@@ -436,7 +436,8 @@ class EvalCallback(Callback):
         self._output_dir = output_dir
         self.batched = batch_size > 0
         self.batch_size = batch_size
-        self.async = a_sync
+        self.a_sync = a_sync
+
 
     def _setup_graph(self):
         num_gpu = cfg.TRAIN.NUM_GPUS
@@ -487,7 +488,7 @@ class EvalCallback(Callback):
         return predictor
 
     def _before_train(self):
-        if hvd.rank() == 0 and self.async:
+        if hvd.rank() == 0 and self.a_sync:
             self.worker = AsyncEvaluator()
         eval_period = cfg.TRAIN.EVAL_PERIOD
         self.epochs_to_eval = set()
@@ -516,7 +517,7 @@ class EvalCallback(Callback):
                 if item is not None:
                     all_results.extend(item)
 
-        if self.async:
+        if self.a_sync:
             # define the async eval task
             def background_coco(all_results):
                 output_file = os.path.join(

@@ -1,13 +1,14 @@
-TF_INC=/usr/local/lib/python3.6/dist-packages/tensorflow/include
-TF_LIB=/usr/local/lib/python3.6/dist-packages/tensorflow
+TF_INSTALL_DIR=/shared/conda/lib/python3.8/site-packages
+TF_INC=$(TF_INSTALL_DIR)/tensorflow/include
+TF_LIB=$(TF_INSTALL_DIR)/tensorflow
 
 CC        = gcc -O2 -pthread
 CXX       = g++
-GPUCC     = nvcc
+GPUCC     = /shared/conda/pkgs/cuda-toolkit/bin/nvcc
 CFLAGS    = -std=c++11 -I$(TF_INC) -D_GLIBCXX_USE_CXX11_ABI=0
 GPUCFLAGS = -c
-LFLAGS    =  -shared -fPIC -ltensorflow_framework -I$(TF_INC) -I$(TF_INC)/external/nsync/public -L$(TF_LIB) -L/usr/local/cuda/lib64 -I/usr/local/cuda/include
-GPULFLAGS = -x cu -shared -Xcompiler -fPIC -ltensorflow_framework -I$(TF_INC) -I$(TF_INC)/external/nsync/public -L$(TF_LIB)
+LFLAGS    =  -shared -fPIC -ltensorflow_framework -I$(TF_INC) -I$(TF_INC)/external/nsync/public -L$(TF_LIB) -L/shared/conda/pkgs/cuda-toolkit/lib64 -I/shared/conda/pkgs/cuda-toolkit/include
+GPULFLAGS = -x cu -shared -Xcompiler -fPIC -ltensorflow_framework -I$(TF_INC) -I$(TF_INC)/external/nsync/public -L$(TF_LIB) -I/shared/conda/pkgs/cuda-toolkit/include/thrust/system/cuda/detail
 DEBUG = -g -G
 GPUDEF    = -D GOOGLE_CUDA=1
 CGPUFLAGS = -lcudart
@@ -29,3 +30,4 @@ gpu:
 
 clean:
 	rm -f $(PROD) $(GPUPROD)
+

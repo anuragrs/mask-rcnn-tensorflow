@@ -129,14 +129,14 @@ _C.TRAIN.STARTING_EPOCH = 1  # the first epoch to start with, useful to continue
 # _C.TRAIN.LR_SCHEDULE = [1500000, 1580000, 1620000]   # "9x" schedule in detectron
 
 _C.TRAIN.LR_EPOCH_SCHEDULE = [(8, 0.1), (10, 0.01), (12, None)] # "1x" schedule in detectron
-_C.TRAIN.EVAL_PERIOD = 25  # period (epochs) to run evaluation
+_C.TRAIN.EVAL_PERIOD = 1 # 25  # period (epochs) to run evaluation
 _C.TRAIN.BATCH_SIZE_PER_GPU = 1
 _C.TRAIN.SEED = 1234
 _C.TRAIN.GRADIENT_CLIP = 0 # set non-zero value to enable gradient clip, 0.36 is recommended for 32x4
-_C.TRAIN.BACKBONE_NCHW = True # use nchw for backbone
-_C.TRAIN.FPN_NCHW = True # use nchw for fpn
-_C.TRAIN.RPN_NCHW = True # use nchw for rpn head
-_C.TRAIN.MASK_NCHW = True # use nchw for maskhead
+_C.TRAIN.BACKBONE_NCHW = False # use nchw for backbone
+_C.TRAIN.FPN_NCHW = False # use nchw for fpn
+_C.TRAIN.RPN_NCHW = False # use nchw for rpn head
+_C.TRAIN.MASK_NCHW = False # use nchw for maskhead
 _C.TRAIN.SHOULD_STOP = False # use stop the training early (for async eval)
 
 # preprocessing --------------------
@@ -186,7 +186,7 @@ _C.RPN.SLOW_ACCURATE_MASK = True # If on, mask calculation will be slower but mo
 
 # fastrcnn training ---------------------
 _C.FRCNN.BATCH_PER_IM = 512
-_C.FRCNN.BBOX_REG_WEIGHTS = [10., 10., 5., 5.]  # Better but non-standard setting: [20, 20, 10, 10]
+_C.FRCNN.BBOX_REG_WEIGHTS = [20., 20., 10., 10.] # [10., 10., 5., 5.]  # Better but non-standard setting: [20, 20, 10, 10]
 _C.FRCNN.FG_THRESH = 0.5
 _C.FRCNN.FG_RATIO = 0.25  # fg ratio in a ROI batch
 
