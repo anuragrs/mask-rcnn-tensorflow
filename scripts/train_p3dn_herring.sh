@@ -4,14 +4,7 @@ THROUGHPUT_LOG_FREQ=2000
 
 cd /shared/mask-rcnn-tensorflow
 
-/opt/amazon/openmpi/bin/mpirun \
---allow-run-as-root \
---mca plm_rsh_no_tree_spawn 1 \
--mca btl_tcp_if_exclude lo,docker0 \
---tag-output \
---H localhost:8 \
---np 8 \
---oversubscribe \
+herringrun \
 -x LD_LIBRARY_PATH \
 -x PATH \
 -x NCCL_SOCKET_IFNAME=^docker0,lo \
@@ -23,8 +16,6 @@ cd /shared/mask-rcnn-tensorflow
 -x HOROVOD_CYCLE_TIME=0.5 \
 -x HOROVOD_FUSION_THRESHOLD=67108864 \
 -x FI_PROVIDER="efa" \
---output-filename /shared/logs/mpirun_logs \
-bash /shared/mask-rcnn-tensorflow/scripts/launcher.sh \
 python /shared/mask-rcnn-tensorflow/MaskRCNN/train.py \
 --logdir /shared/logs/train_log \
 --fp16 \

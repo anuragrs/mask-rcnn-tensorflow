@@ -19,8 +19,7 @@ from config import config as cfg
 
 from tensorpack_tfutils import get_current_tower_context, TrainContext, get_global_step_var
 
-import horovod.tensorflow as hvd
-
+import herring.tensorflow as herring
 
 __all__ = ['launch_train_with_config']
 
@@ -100,22 +99,22 @@ def _make_get_grad_fn(input, get_cost_fn, get_opt_fn, XLA_COMPILE=False):
 
     return get_grad_fn
 
-def allreduce(grads, compression=hvd.Compression.none, average=True):
-    if hvd.size() == 1:
+def allreduce(grads, average=True):
+    if herring.size() == 1:
         return grads
     # copied from https://github.com/uber/horovod/blob/master/horovod/tensorflow/__init__.py
     averaged_gradients = []
     with tf.name_scope("AllReduce"):
         for grad, var in grads:
             if grad is not None:
-                avg_grad = hvd.allreduce(grad, average=average, compression=compression)
+                avg_grad = herring.allreduce(grad) #, average=average, compression=compression)
                 averaged_gradients.append((avg_grad, var))
             else:
                 averaged_gradients.append((None, var))
     return averaged_gradients
 
 def register_callback(cb):
-    is_chief = hvd.rank() == 0
+    is_chief = herring.rank() == 0
     if not is_chief and cb.chief_only:
         logger.warn("Callback {} is chief-only, skipped.".format(str(cb)))
         return False
@@ -235,7 +234,7 @@ class TrainLoop(object):
         return self._local_step
 
 def setup_callbacks(callbacks, monitors, loop):
-    is_chief = hvd.rank() == 0
+    is_chief = herring.rank() == 0
     cbs = []
     for cb in callbacks:
         if register_callback(cb):
@@ -315,10 +314,10 @@ class ReuseSessionCreator(tf.train.SessionCreator):
 
 def initialize(session_init, _callbacks, target='', config=None):
     import multiprocessing as mp
-    is_chief = hvd.rank() == 0
+    is_chief = herring.rank() == 0
 
     with tf.name_scope('horovod_broadcast'):
-        _broadcast_op = hvd.broadcast_global_variables(0)
+        _broadcast_op = herring.broadcast_global_variables(0)
 
     session_init._setup_graph()
 
@@ -326,8 +325,8 @@ def initialize(session_init, _callbacks, target='', config=None):
 
     if config is None:
         config = get_default_sess_config()
-    config.gpu_options.visible_device_list = str(hvd.local_rank())
-    config.inter_op_parallelism_threads = mp.cpu_count() // hvd.local_size()
+    config.gpu_options.visible_device_list = str(herring.local_rank())
+    config.inter_op_parallelism_threads = mp.cpu_count() // herring.local_size()
 
     sess = tf.Session(target=target, config=config)
     sess.run(tf.global_variables_initializer())
@@ -351,7 +350,7 @@ def initialize(session_init, _callbacks, target='', config=None):
     if is_chief:
         logger.info("Broadcasting initialized variables ...")
     else:
-        logger.info("Rank {} waiting for initialization broadcasting ...".format(hvd.rank()))
+        logger.info("Rank {} waiting for initialization broadcasting ...".format(herring.rank()))
     sess.run(_broadcast_op)
 
     return sess, hooked_sess

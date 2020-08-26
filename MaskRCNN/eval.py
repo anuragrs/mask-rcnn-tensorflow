@@ -29,7 +29,7 @@ from dataset import DetectionDataset
 from config import config as cfg
 
 try:
-    import horovod.tensorflow as hvd
+    import herring.tensorflow as herring
 except ImportError:
     pass
 
@@ -457,10 +457,10 @@ class EvalCallback(Callback):
 
             if self.batched:
                 self.dataflow = get_batched_eval_dataflow(self._eval_dataset,
-                                              shard=hvd.rank(), num_shards=hvd.size(), batch_size=self.batch_size)
+                                              shard=herring.rank(), num_shards=herring.size(), batch_size=self.batch_size)
             else:
                 self.dataflow = get_eval_dataflow(self._eval_dataset,
-                                              shard=hvd.rank(), num_shards=hvd.size())
+                                              shard=herring.rank(), num_shards=herring.size())
 
 
     def _build_predictor(self, idx):
@@ -488,7 +488,7 @@ class EvalCallback(Callback):
         return predictor
 
     def _before_train(self):
-        if hvd.rank() == 0 and self.a_sync:
+        if herring.rank() == 0 and self.a_sync:
             self.worker = AsyncEvaluator()
         eval_period = cfg.TRAIN.EVAL_PERIOD
         self.epochs_to_eval = set()
@@ -510,7 +510,7 @@ class EvalCallback(Callback):
                 local_results = predict_dataflow(self.dataflow, self.predictor)
 
             results = gather_result_from_all_processes(local_results)
-            if hvd.rank() > 0:
+            if herring.rank() > 0:
                 return
             all_results = []
             for item in results:

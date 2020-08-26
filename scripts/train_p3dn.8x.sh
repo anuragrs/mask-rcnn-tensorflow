@@ -43,7 +43,7 @@ python /shared/mask-rcnn-tensorflow/MaskRCNN/train.py \
 --fp16 \
 --throughput_log_freq ${THROUGHPUT_LOG_FREQ} \
 --config \
-TRAIN.BATCH_SIZE_PER_GPU=4 \
+TRAIN.BATCH_SIZE_PER_GPU=2 \
 MODE_MASK=True \
 MODE_FPN=True \
 DATA.BASEDIR=/shared/data/coco/ \

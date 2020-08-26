@@ -256,11 +256,11 @@ def finalize_configs(is_training):
         assert _C.TRAINER in ['horovod', 'replicated'], _C.TRAINER
 
         # setup NUM_GPUS
-        if _C.TRAINER == 'horovod':
-            import horovod.tensorflow as hvd
-            ngpu = hvd.size()
+        if _C.TRAINER == 'herring':
+            import herring.tensorflow as herring
+            ngpu = herring.size()
 
-            if ngpu == hvd.local_size():
+            if ngpu == herring.local_size():
                 logger.warn("It's not recommended to use horovod for single-machine training. "
                             "Replicated trainer is more stable and has the same efficiency.")
         else:

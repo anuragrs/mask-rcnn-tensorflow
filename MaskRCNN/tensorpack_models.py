@@ -942,18 +942,14 @@ def BatchNorm(inputs, axis=None, training=None, momentum=0.9, epsilon=1e-5,
                     reduction='sum',
                     num_devices=num_dev,
                     shared_name=shared_name + '_NCCL_mean_square') * (1.0 / num_dev)
-        elif sync_statistics == 'horovod':
+        elif sync_statistics == 'herring':
             # Require https://github.com/uber/horovod/pull/331
-            import horovod.tensorflow as hvd
-            if hvd.size() == 1:
+            import herring.tensorflow as herring
+            if herring.size() == 1:
                 logger.warn("BatchNorm(sync_statistics='horovod') is used with only one process!")
-            else:
-                import horovod
-                hvd_version = tuple(map(int, horovod.__version__.split('.')))
-                assert hvd_version >= (0, 13, 6), "sync_statistics=horovod needs horovod>=0.13.6 !"
 
-                batch_mean = hvd.allreduce(batch_mean, average=True)
-                batch_mean_square = hvd.allreduce(batch_mean_square, average=True)
+                batch_mean = herring.allreduce(batch_mean, average=True)
+                batch_mean_square = herring.allreduce(batch_mean_square, average=True)
         batch_var = batch_mean_square - tf.square(batch_mean)
         batch_mean_vec = batch_mean
         batch_var_vec = batch_var

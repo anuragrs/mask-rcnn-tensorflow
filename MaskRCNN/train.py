@@ -40,9 +40,10 @@ from model.generalized_rcnn import ResNetFPNModel
 
 
 try:
-    import horovod.tensorflow as hvd
+    import herring.tensorflow as herring
 except ImportError:
     pass
+
 
 def do_visualize(model, model_path, nr_visualize=100, output_dir='output'):
     """
@@ -248,14 +249,12 @@ if __name__ == '__main__':
     else:
 
         is_horovod = cfg.TRAINER == 'horovod'
+        is_herring = cfg.TRAINER == 'herring'
+        assert (is_horovod and is_herring) == False
         if args.async_eval:
             assert is_horovod, "Async evaluation only support Horovod based trainer"
 
-        if is_horovod:
-            hvd.init()
-            logger.info("Horovod Rank={}, Size={}".format(hvd.rank(), hvd.size()))
-
-        if not is_horovod or hvd.rank() == 0:
+        if not is_herring or herring.rank() == 0:
             logger.set_logger_dir(args.logdir, 'd')
             log_launch_config(args.log_full_git_diff)
 
@@ -267,7 +266,8 @@ if __name__ == '__main__':
 
         if cfg.TRAIN.SEED:
             tf.set_random_seed(cfg.TRAIN.SEED)
-            fix_rng_seed(cfg.TRAIN.SEED*hvd.rank())
+            rank = herring.rank() if is_herring else rank
+            fix_rng_seed(cfg.TRAIN.SEED*rank)
             np.random.seed(cfg.TRAIN.SEED)
 
         images_per_step = cfg.TRAIN.NUM_GPUS * cfg.TRAIN.BATCH_SIZE_PER_GPU
@@ -335,12 +335,12 @@ if __name__ == '__main__':
 
         if args.tfprof:
             # We only get tf profiling chrome trace on rank==0
-            if hvd.rank() == 0:
+            if herring.rank() == 0:
                 callbacks.append(EnableCallbackIf(
                     GraphProfiler(dump_tracing=True, dump_event=True),
                     lambda self: self.trainer.global_step >= args.tfprof_start_step and self.trainer.global_step <= args.tfprof_end_step))
 
-        if is_horovod and hvd.rank() > 0:
+        if is_herring and herring.rank() > 0:
             session_init = None
         else:
             if args.load:
