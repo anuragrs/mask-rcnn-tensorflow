@@ -266,13 +266,13 @@ def predict_dataflow_batch(df, model_func, tqdm_bar=None):
                     bbox = list([float(b) for b in r.box])
                     score = round(float(r.score), 4)
 
-#                     print("A result")
-#                     print(f'image_id [{type(img_id)}] {img_id}')
-#                     print(f'class_id [{type(class_id)}] {class_id}')
-#                     print(f'bbox [{type(bbox)}] {bbox}')
-#                     print(f'bbox[0] [{type(bbox[0])}] {bbox[0]}')
-#                     print(f'score [{type(score)}] {score}')
-
+#                    print("A result")
+#                    print(f'image_id [{type(img_id)}] {img_id}')
+#                    print(f'class_id [{type(class_id)}] {class_id}')
+#                    print(f'bbox [{type(bbox)}] {bbox}')
+#                    print(f'bbox[0] [{type(bbox[0])}] {bbox[0]}')
+#                    print(f'score [{type(score)}] {score}')
+#
                     res = {
                         'image_id': img_id,
                         'category_id': class_id,
@@ -319,9 +319,15 @@ def multithread_predict_dataflow(dataflows, model_funcs):
 
 def gather_result_from_all_processes(local_results, root=0):
     from mpi4py import MPI
-    comm = MPI.COMM_WORLD
+    comm = herring.get_worker_comm()
     res = comm.gather(local_results,root=root)
     return res
+
+#def gather_result_from_all_processes(local_results, root=0):
+#    from mpi4py import MPI
+#    comm = MPI.COMM_WORLD
+#    res = comm.gather(local_results,root=root)
+#    return res
 
 
 class AsyncEvaluator():

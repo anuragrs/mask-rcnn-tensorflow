@@ -251,8 +251,8 @@ if __name__ == '__main__':
         is_horovod = cfg.TRAINER == 'horovod'
         is_herring = cfg.TRAINER == 'herring'
         assert (is_horovod and is_herring) == False
-        if args.async_eval:
-            assert is_horovod, "Async evaluation only support Horovod based trainer"
+        #if args.async_eval:
+        #    assert is_horovod, "Async evaluation only support Horovod based trainer"
 
         if not is_herring or herring.rank() == 0:
             logger.set_logger_dir(args.logdir, 'd')

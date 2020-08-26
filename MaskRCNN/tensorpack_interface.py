@@ -102,12 +102,11 @@ def _make_get_grad_fn(input, get_cost_fn, get_opt_fn, XLA_COMPILE=False):
 def allreduce(grads, average=True):
     if herring.size() == 1:
         return grads
-    # copied from https://github.com/uber/horovod/blob/master/horovod/tensorflow/__init__.py
     averaged_gradients = []
     with tf.name_scope("AllReduce"):
-        for grad, var in grads:
+        for i, (grad, var) in enumerate(grads):
             if grad is not None:
-                avg_grad = herring.allreduce(grad) #, average=average, compression=compression)
+                avg_grad = herring.allreduce(grad, param_index=i, num_params=len(grads), use_fp16=True) #, average=average, compression=compression)
                 averaged_gradients.append((avg_grad, var))
             else:
                 averaged_gradients.append((None, var))
@@ -316,8 +315,8 @@ def initialize(session_init, _callbacks, target='', config=None):
     import multiprocessing as mp
     is_chief = herring.rank() == 0
 
-    with tf.name_scope('horovod_broadcast'):
-        _broadcast_op = herring.broadcast_global_variables(0)
+#    with tf.name_scope('horovod_broadcast'):
+#        _broadcast_op = herring.broadcast_global_variables(0)
 
     session_init._setup_graph()
 
@@ -334,6 +333,7 @@ def initialize(session_init, _callbacks, target='', config=None):
     sess.run(tf.tables_initializer())
 
     hooks = _callbacks.get_hooks()
+    hooks.append(herring.BroadcastGlobalVariablesHook(0))
     hooked_sess = tf.train.MonitoredSession(
         session_creator=ReuseSessionCreator(sess), hooks=hooks)
 
@@ -351,7 +351,7 @@ def initialize(session_init, _callbacks, target='', config=None):
         logger.info("Broadcasting initialized variables ...")
     else:
         logger.info("Rank {} waiting for initialization broadcasting ...".format(herring.rank()))
-    sess.run(_broadcast_op)
+#    sess.run(_broadcast_op)
 
     return sess, hooked_sess
 

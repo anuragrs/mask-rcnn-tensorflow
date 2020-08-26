@@ -253,7 +253,7 @@ def finalize_configs(is_training):
             # don't autotune if augmentation is on
             os.environ['TF_CUDNN_USE_AUTOTUNE'] = '0'
         os.environ['TF_AUTOTUNE_THRESHOLD'] = '1'
-        assert _C.TRAINER in ['horovod', 'replicated'], _C.TRAINER
+        assert _C.TRAINER in ['horovod', 'replicated', 'herring'], _C.TRAINER
 
         # setup NUM_GPUS
         if _C.TRAINER == 'herring':
