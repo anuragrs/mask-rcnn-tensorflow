@@ -27,6 +27,8 @@ class GradientClipOptimizer(tf.train.Optimizer):
     def __init__(self, opt, clip_norm):
         self.opt = opt
         self.clip_norm = clip_norm
+        self._use_locking = False
+        self._name = 'gradclip'
 
     def compute_gradients(self, *args, **kwargs):
         return self.opt.compute_gradients(*args, **kwargs)
